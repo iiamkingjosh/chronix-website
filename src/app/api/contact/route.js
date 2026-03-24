@@ -13,8 +13,8 @@ export async function POST(req) {
     const { firstName, lastName, email, phone, message } = body;
 
     const response = await resend.emails.send({
-      from: "Chronix <info@chronixtechnology.com>",
-      to: "info@chronixtechnology.com",
+      from: "Chronix <info@chronixtechnology.com>", // ✅ VERIFIED DOMAIN
+      to: "info@chronixtechnology.com", // ✅ RECEIVING EMAIL
       subject: "New Contact Form Message",
       html: `
         <h2>New Contact Message</h2>
