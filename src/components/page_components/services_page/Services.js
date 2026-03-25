@@ -46,7 +46,7 @@ const Services = () => {
         >
           {/* Image Section */}
           <div className="w-full lg:w-1/2">
-            <div className="relative w-full h-[300px] lg:h-[400px]">
+            <div className="relative w-full h-75 lg:h-100">
               <Image
                 src={service.image}
                 alt={`${service.heading} - Chronix Technology service in Lagos Nigeria`}

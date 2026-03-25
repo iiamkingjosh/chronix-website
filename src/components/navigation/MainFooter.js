@@ -18,7 +18,6 @@ const MainFooter = () => {
 
   const handleSubscribe = () => {
     // handle subscription logic
-    console.log("Subscribed:", email);
     setEmail("");
   };
 

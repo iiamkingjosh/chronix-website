@@ -20,7 +20,7 @@ const Hero = () => {
 
       {/* Hero Man Image */}
       <div
-        className="hidden md:block absolute z-0 translate-x-28 translate-y-24 w-[900px] md:w-[900px] lg:w-[900px] xl:w-[900px] 2xl:w-[900px]"
+        className="hidden md:block absolute z-0 translate-x-28 translate-y-24 w-225 md:w-225 lg:w-225 xl:w-225 2xl:w-225"
         style={{ bottom: "0px", right: "-20px" }}
       >
         <Image

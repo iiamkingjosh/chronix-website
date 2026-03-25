@@ -25,8 +25,6 @@ const FAQForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("FORM SUBMITTED"); // Debug
-
     setLoading(true);
 
     try {
@@ -39,8 +37,6 @@ const FAQForm = () => {
       });
 
       const data = await res.json();
-
-      console.log("Response:", data);
 
       if (data.success) {
         alert("✅ Message sent successfully!");
@@ -55,7 +51,6 @@ const FAQForm = () => {
         alert("❌ Failed to send message");
       }
     } catch (error) {
-      console.error(error);
       alert("❌ Something went wrong");
     }
 
