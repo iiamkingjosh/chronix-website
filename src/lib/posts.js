@@ -48,15 +48,21 @@ export function getAllPostIds() {
 
 export async function getPostData(slug) {
   const fullPath = path.join(postsDirectory, `${slug}.mdx`);
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-  // Use gray-matter to parse the post metadata section
-  const matterResult = matter(fileContents);
+  try {
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-  // Combine the data with the id and content
-  return {
-    slug,
-    content: matterResult.content,
-    ...matterResult.data,
-  };
+    // Use gray-matter to parse the post metadata section
+    const matterResult = matter(fileContents);
+
+    // Combine the data with the id and content
+    return {
+      slug,
+      content: matterResult.content,
+      ...matterResult.data,
+    };
+  } catch (error) {
+    console.error(`Error reading post ${slug}:`, error);
+    return null;
+  }
 }
