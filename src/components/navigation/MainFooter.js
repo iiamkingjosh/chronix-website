@@ -14,11 +14,46 @@ import {
 } from "react-icons/fa6";
 
 const MainFooter = () => {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleSubscribe = () => {
-    // handle subscription logic
-    setEmail("");
+  const handleSubscribe = async () => {
+    if (!fullName.trim()) {
+      setSubscribeStatus("Please enter your full name.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setSubscribeStatus("Please enter your email address.");
+      return;
+    }
+
+    setSubscribing(true);
+    setSubscribeStatus("");
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to subscribe.');
+      }
+
+      setSubscribeStatus(result.message || 'Subscribed successfully.');
+      setFullName("");
+      setEmail("");
+    } catch (error) {
+      setSubscribeStatus(error.message || 'Failed to subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   // Mapped social media array with links
@@ -93,9 +128,18 @@ const MainFooter = () => {
           {/* Newsletter */}
           <div className="flex flex-col gap-y-3">
             <p className="text-sm leading-relaxed opacity-80">
-              Subscribe to stay tuned for new web design and latest updates.
-              Let&apos;s do it!
+              Get practical cybersecurity insights and technology updates. Clear, relevant, and built for impact.
             </p>
+            <div className="flex items-center gap-x-2">
+              <input
+                type="text"
+                value={fullName}
+                placeholder="Enter your full name"
+                onChange={(e) => setFullName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
+                className="flex-1 min-w-0 px-4 py-2 rounded-md border border-white/20 bg-white/10 text-sm placeholder:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/40 transition"
+              />
+            </div>
             <div className="flex items-center gap-x-2">
               <input
                 type="email"
@@ -107,11 +151,15 @@ const MainFooter = () => {
               />
               <button
                 onClick={handleSubscribe}
+                disabled={subscribing}
                 className="font-orbitron btn btn-lg btn-white shrink-0 px-4 py-2 text-sm"
               >
-                Subscribe
+                {subscribing ? 'Subscribing...' : 'Subscribe'}
               </button>
             </div>
+            {subscribeStatus && (
+              <p className="text-xs opacity-90">{subscribeStatus}</p>
+            )}
           </div>
 
           {/* Social links */}
