@@ -86,13 +86,10 @@ const CompanyLogos = () => {
 
       <style jsx>{`
         .logos-track {
-          /* Width must be at least 2x the content so both copies fit side by side */
           width: max-content;
           animation: seamless-slide 20s linear infinite;
-        }
-
-        .logos-track:hover {
-          animation-play-state: paused;
+          will-change: transform;
+          backface-visibility: hidden;
         }
 
         @keyframes seamless-slide {
@@ -100,11 +97,6 @@ const CompanyLogos = () => {
             transform: translateX(0);
           }
           100% {
-            /*
-              Translate exactly half the total track width (i.e. one full copy).
-              Because the second copy is identical, the jump from -50% back to 0
-              is invisible — creating a perfect loop.
-            */
             transform: translateX(-50%);
           }
         }

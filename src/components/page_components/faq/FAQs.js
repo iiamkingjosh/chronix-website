@@ -2,11 +2,17 @@
 import { FAQtext } from "@/app/index/text_contents";
 import { useThemeProvider } from "@/app/ThemeProvider";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import FAQItem from "./FAQItem";
 
 const FAQs = () => {
   const { theme } = useThemeProvider();
+  const [activeIndex, setActiveIndex] = useState(null);
+
+  const handleToggle = (index) => {
+    setActiveIndex((prev) => (prev === index ? null : index));
+  };
+
   return (
     <div className="h-auto min-h-screen py-8 relative overflow-hidden">
       {/* Background Image */}
@@ -32,7 +38,7 @@ const FAQs = () => {
           {/* Mapped FAQs */}
           <ul className="w-full flex flex-col gap-y-3 relative">
             {FAQtext.map((text, i) => (
-              <FAQItem text={text} key={i} />
+              <FAQItem text={text} key={i} isOpen={activeIndex === i} onToggle={() => handleToggle(i)} />
             ))}
           </ul>
         </div>

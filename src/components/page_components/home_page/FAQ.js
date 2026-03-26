@@ -1,13 +1,17 @@
 "use client";
 import { FAQtext } from "@/app/index/text_contents";
 import { useThemeProvider } from "@/app/ThemeProvider";
-import { ArrowDown } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import FAQItem from "../faq/FAQItem";
 
 const FAQ = () => {
   const { theme } = useThemeProvider();
+  const [activeIndex, setActiveIndex] = useState(null);
+
+  const handleToggle = (index) => {
+    setActiveIndex((prev) => (prev === index ? null : index));
+  };
   return (
     <div className="h-auto min-h-screen py-8 relative overflow-hidden">
       {/* Background Image */}
@@ -41,7 +45,7 @@ const FAQ = () => {
 
         <ul className="w-full md:w-auto flex flex-col gap-y-3 relative">
           {FAQtext.slice(0, 6).map((text, i) => (
-            <FAQItem text={text} key={i} />
+            <FAQItem text={text} key={i} isOpen={activeIndex === i} onToggle={() => handleToggle(i)} />
           ))}
 
           {/* Decorative question mark image - fixed z-index issue */}
