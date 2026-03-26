@@ -1,4 +1,4 @@
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import PostContent from './PostContent';
 import { getPostData, getAllPostIds } from '../../../lib/posts';
 
 export async function generateStaticParams() {
@@ -21,7 +21,7 @@ export default async function Post({ params }) {
       <article>
         <h1 className="text-4xl font-bold mb-4">{postData.title}</h1>
         <p className="text-gray-600 mb-8">{postData.date}</p>
-        <MDXRemote source={postData.content} />
+        <PostContent content={postData.content} />
       </article>
     </div>
   );
