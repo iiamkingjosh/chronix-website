@@ -7,7 +7,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const postData = await getPostData(params.slug);
+  const { slug } = await params;
+  const postData = await getPostData(slug);
   if (!postData) {
     return {
       title: 'Post Not Found',
@@ -19,7 +20,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Post({ params }) {
-  const postData = await getPostData(params.slug);
+  const { slug } = await params;
+  const postData = await getPostData(slug);
 
   if (!postData) {
     return (
@@ -33,6 +35,13 @@ export default async function Post({ params }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <article>
+        {postData.coverImage && (
+          <img
+            src={postData.coverImage}
+            alt={postData.title}
+            className="w-full h-64 md:h-96 object-cover rounded-lg mb-8"
+          />
+        )}
         <h1 className="text-4xl font-bold mb-4">{postData.title}</h1>
         <p className="text-gray-600 mb-8">{postData.date}</p>
         <PostContent content={postData.content} />

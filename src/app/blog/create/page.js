@@ -7,6 +7,7 @@ export default function CreatePost() {
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
+  const [coverImage, setCoverImage] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -14,7 +15,7 @@ export default function CreatePost() {
     const response = await fetch('/api/blog', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, excerpt, content }),
+      body: JSON.stringify({ title, excerpt, content, coverImage }),
     });
     if (response.ok) {
       const { slug } = await response.json();
@@ -39,12 +40,21 @@ export default function CreatePost() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Excerpt</label>
+          <label className="block text-sm font-medium mb-2">Cover Image URL</label>
           <input
-            type="text"
+            type="url"
+            value={coverImage}
+            onChange={(e) => setCoverImage(e.target.value)}
+            className="w-full p-2 border rounded"
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Excerpt</label>
+          <textarea
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded h-20"
             required
           />
         </div>
@@ -54,6 +64,7 @@ export default function CreatePost() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="w-full p-2 border rounded h-64"
+            placeholder="Write your blog post content here. You can include images using markdown: ![Alt text](image-url)"
             required
           />
         </div>

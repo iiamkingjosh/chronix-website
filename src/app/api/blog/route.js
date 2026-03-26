@@ -5,7 +5,7 @@ import matter from 'gray-matter';
 const postsDirectory = path.join(process.cwd(), 'content', 'blog');
 
 export async function POST(request) {
-  const { title, excerpt, content } = await request.json();
+  const { title, excerpt, content, coverImage } = await request.json();
 
   // Generate slug from title
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -15,6 +15,7 @@ export async function POST(request) {
 title: "${title}"
 date: "${new Date().toISOString().split('T')[0]}"
 excerpt: "${excerpt}"
+coverImage: "${coverImage || ''}"
 ---
 
 `;

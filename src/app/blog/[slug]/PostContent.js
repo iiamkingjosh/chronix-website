@@ -20,6 +20,14 @@ export default function PostContent({ content }) {
           ul: ({ children }) => <ul className="list-disc list-inside mb-4">{children}</ul>,
           ol: ({ children }) => <ol className="list-decimal list-inside mb-4">{children}</ol>,
           li: ({ children }) => <li className="mb-1">{children}</li>,
+          img: ({ src, alt, ...props }) => (
+            <img
+              src={src}
+              alt={alt}
+              className="w-full h-auto rounded-lg my-6 shadow-lg"
+              {...props}
+            />
+          ),
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-gray-300 pl-4 italic mb-4">
               {children}
