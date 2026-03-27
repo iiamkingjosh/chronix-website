@@ -1,20 +1,19 @@
 import type { MetadataRoute } from "next";
-import { getSortedPostsData } from "../lib/posts";
+import { getAllSlugs } from "../lib/firestorePosts";
 
-interface PostData {
-  id: string;
-  date: string;
-  title: string;
-  excerpt: string;
-}
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://chronixtechnology.com";
 
-  const posts = (getSortedPostsData() as PostData[]).map((post) => ({
-    url: `${baseUrl}/blog/${post.id}`,
-    lastModified: new Date(post.date),
-  }));
+  let posts: { url: string; lastModified: Date }[] = [];
+  try {
+    const slugs = await getAllSlugs();
+    posts = slugs.map((item) => ({
+      url: `${baseUrl}/blog/${item.slug}`,
+      lastModified: new Date(),
+    }));
+  } catch (error) {
+    console.error("Error fetching post slugs for sitemap:", error);
+  }
 
   return [
     {
