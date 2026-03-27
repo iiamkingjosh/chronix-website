@@ -4,7 +4,15 @@ import Link from "next/link";
 import React from "react";
 
 const Hero = () => {
-  const splitHeading = heroHeading.split(" ");
+  const splitHeading = heroHeading.split(" ").reduce((lines, word) => {
+    if (word === "&" && lines.length > 0) {
+      lines[lines.length - 1] = `${lines[lines.length - 1]} ${word}`;
+    } else {
+      lines.push(word);
+    }
+
+    return lines;
+  }, []);
 
   return (
     <section className="relative h-screen flex items-center w-full overflow-hidden">
@@ -38,7 +46,7 @@ const Hero = () => {
         {/* Text Content */}
         <div className="flex flex-col items-start max-w-2xl">
           {/* ✅ MAIN SEO HEADING */}
-<h1 className="text-[2.5rem] md:text-[4.5rem] font-bold text-white mb-4 leading-tight font-orbitron">            {splitHeading.map((word, index) => (
+<h1 className="text-[1.5rem] md:text-[3.5rem] font-bold text-white mb-4 leading-tight font-orbitron">            {splitHeading.map((word, index) => (
               <span
                 key={index}
                 className={`${
@@ -58,13 +66,13 @@ const Hero = () => {
           {/* CTA */}
           <span className="w-full items-center justify-start mt-4 flex gap-x-4">
             <Link href="/about-us" className="btn btn-white btn-lg rounded-2xl">
-              Explore Ecosystem
+              Explore Articles
             </Link>
             <Link
-              href="/about-us"
+              href="#footer-subscribe"
               className="btn btn-white-outline btn-lg rounded-2xl"
             >
-              Our Impact
+              Subscribe for Updates
             </Link>
           </span>
         </div>

@@ -126,7 +126,7 @@ const MainFooter = () => {
         {/* Newsletter & Social */}
         <div className="flex flex-col gap-y-6 max-w-sm">
           {/* Newsletter */}
-          <div className="flex flex-col gap-y-3">
+          <div id="footer-subscribe" className="flex flex-col gap-y-3">
             <p className="text-sm leading-relaxed opacity-80">
               Get practical cybersecurity insights and technology updates. Clear, relevant, and built for impact.
             </p>

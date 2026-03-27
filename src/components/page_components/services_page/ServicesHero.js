@@ -31,13 +31,13 @@ const ServicesHero = () => {
           </p>
           <span className="w-full items-center justify-start mt-4 flex gap-x-4">
             <Link href="/about-us" className="btn btn-white btn-lg rounded-2xl">
-              Explore Ecosystem
+              Get Started
             </Link>
             <Link
               href="/about-us"
               className="btn btn-white-outline btn-lg rounded-2xl"
             >
-              Our Impact
+              Discover
             </Link>
           </span>
         </div>

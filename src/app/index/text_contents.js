@@ -27,8 +27,8 @@ export const navigations = [
 
 export const companyName = "Chronix Tech";
 
-export const heroHeading = "Reducing Technology Friction";
-export const heroSubHeading = `Chronix Technology Limited is a leading IT company in Lagos, Nigeria providing cybersecurity, IT infrastructure, cloud solutions, and enterprise technology services. We help businesses secure, scale, and optimize their operations with reliable and high-performance technology solutions.`;
+export const heroHeading = "Cybersecurity & Technology  Insights";
+export const heroSubHeading = `Practical guides, expert analysis, and real-world solutions in cybersecurity, cloud, networking, and IT infrastructure—built for professionals and businesses.`;
 
 export const servicesText = {
   services: {

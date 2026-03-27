@@ -23,7 +23,7 @@ const Offers = () => {
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-3 mt-4 sm:mt-8 w-full max-w-6xl mx-auto place-items-center">
         {offers.map((offer, i) => {
           const bgMap = {
-            vibrant_yellow: "bg-yellow-400",
+            vibrant_yellow: "bg-vibrant_orange",
             white: "bg-white border border-gray-200",
             "grey-400": "bg-gray-300",
           };
@@ -69,7 +69,7 @@ const Offers = () => {
               <div
                 className={`${bgMap[offer.bg]} ${textMap[offer.bg]} px-3 sm:px-4 py-2 sm:py-3 rounded-b-2xl`}
               >
-                <h2 className="text-base sm:text-sm md:text-lg font-bold tracking-wide text-center sm:text-left">
+                <h2 className="text-base sm:text-sm md:text-lg font-bold tracking-wide text-center uppercase">
                   {offer.heading}
                 </h2>
               </div>
