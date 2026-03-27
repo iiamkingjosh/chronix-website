@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 
 const CompanyLogos = () => {
   const companies = [
@@ -68,7 +68,7 @@ const CompanyLogos = () => {
         When it reaches -50%, the animation loops back to 0, which looks identical
         because the second copy is pixel-perfect identical to the first.
       */}
-      <div className="logos-track flex items-center gap-8 py-8">
+      <div className="logos-track py-8">
         {/* First copy */}
         {companies.map((company, index) => (
           <LogoItem key={`a-${index}`} company={company} index={index} />
@@ -83,24 +83,6 @@ const CompanyLogos = () => {
           />
         ))}
       </div>
-
-      <style jsx>{`
-        .logos-track {
-          width: max-content;
-          animation: seamless-slide 20s linear infinite;
-          will-change: transform;
-          backface-visibility: hidden;
-        }
-
-        @keyframes seamless-slide {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
     </div>
   );
 };

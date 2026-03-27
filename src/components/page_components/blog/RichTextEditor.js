@@ -21,12 +21,13 @@ function normalizeHtml(html) {
   return (html || '').trim().replace(/^<p><br><\/p>$/i, '');
 }
 
-export default function RichTextEditor({ value, onChange }) {
+export default function RichTextEditor({ value, onChange, onImageUpload }) {
   const editorHostRef = useRef(null);
   const quillInstanceRef = useRef(null);
   const savedRangeRef = useRef(null);
   const selectedImageRef = useRef(null);
   const lastHtmlRef = useRef('');
+  const onImageUploadRef = useRef(onImageUpload);
   const toolbarId = useId();
 
   const [isReady, setIsReady] = useState(false);
@@ -36,6 +37,10 @@ export default function RichTextEditor({ value, onChange }) {
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
   const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    onImageUploadRef.current = onImageUpload;
+  }, [onImageUpload]);
 
   function rememberSelection() {
     const editor = quillInstanceRef.current;
@@ -247,7 +252,90 @@ export default function RichTextEditor({ value, onChange }) {
         };
 
         editor.root.addEventListener('click', handleClick);
-        detachClickHandler = () => editor.root.removeEventListener('click', handleClick);
+
+        let dragCounter = 0;
+
+        const handleDragEnter = (event) => {
+          if (!event.dataTransfer?.types?.includes('Files')) return;
+          event.preventDefault();
+          event.stopPropagation();
+          dragCounter++;
+          if (dragCounter === 1) {
+            editor.root.style.backgroundColor = 'rgba(255, 118, 27, 0.1)';
+            editor.root.style.borderRadius = '4px';
+          }
+        };
+
+        const handleDragLeave = (event) => {
+          if (!event.dataTransfer?.types?.includes('Files')) return;
+          event.preventDefault();
+          event.stopPropagation();
+          dragCounter--;
+          if (dragCounter === 0) {
+            editor.root.style.backgroundColor = '';
+            editor.root.style.borderRadius = '';
+          }
+        };
+
+        const handleDragOver = (event) => {
+          if (!event.dataTransfer?.types?.includes('Files')) return;
+          event.preventDefault();
+          event.stopPropagation();
+        };
+
+        const handleDrop = (event) => {
+          const files = event.dataTransfer?.files || [];
+          const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+          if (imageFiles.length === 0) return;
+          event.preventDefault();
+          event.stopPropagation();
+          dragCounter = 0;
+          editor.root.style.backgroundColor = '';
+          editor.root.style.borderRadius = '';
+
+          imageFiles.forEach((file) => {
+            if (onImageUploadRef.current) {
+              onImageUploadRef.current(file)
+                .then((url) => {
+                  const range = editor.getSelection(true) || { index: editor.getLength(), length: 0 };
+                  editor.setSelection(range.index, range.length, 'user');
+                  editor.insertEmbed(range.index, 'image', url, 'user');
+                  editor.insertText(range.index + 1, '\n', 'user');
+                  syncEditorHtml(editor);
+                })
+                .catch((err) => {
+                  console.error('Image upload failed:', err);
+                  alert(err?.message || 'Failed to upload image.');
+                });
+            } else {
+              const reader = new FileReader();
+              reader.onload = (loadEvent) => {
+                const dataUrl = loadEvent.target?.result;
+                if (typeof dataUrl === 'string') {
+                  const range = editor.getSelection(true) || { index: editor.getLength(), length: 0 };
+                  editor.setSelection(range.index, range.length, 'user');
+                  editor.insertEmbed(range.index, 'image', dataUrl, 'user');
+                  editor.insertText(range.index + 1, '\n', 'user');
+                  syncEditorHtml(editor);
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+        };
+
+        editor.root.addEventListener('dragenter', handleDragEnter);
+        editor.root.addEventListener('dragleave', handleDragLeave);
+        editor.root.addEventListener('dragover', handleDragOver);
+        editor.root.addEventListener('drop', handleDrop);
+
+        detachClickHandler = () => {
+          editor.root.removeEventListener('click', handleClick);
+          editor.root.removeEventListener('dragenter', handleDragEnter);
+          editor.root.removeEventListener('dragleave', handleDragLeave);
+          editor.root.removeEventListener('dragover', handleDragOver);
+          editor.root.removeEventListener('drop', handleDrop);
+        };
 
         setLoadError('');
         setIsReady(true);

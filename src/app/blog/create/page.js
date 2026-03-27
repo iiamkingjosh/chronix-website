@@ -8,7 +8,14 @@ export default function CreatePost() {
       <h1 className="text-4xl font-bold mb-8">Create New Post</h1>
       <PostEditorForm
         mode="create"
-        initialData={{ title: '', excerpt: '', content: '', coverImage: '', slug: '' }}
+        initialData={{
+          title: '',
+          excerpt: '',
+          content: '',
+          coverImageUrl: '',
+          coverImageAlt: '',
+          slug: '',
+        }}
       />
     </div>
   );

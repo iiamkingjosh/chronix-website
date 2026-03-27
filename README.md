@@ -16,6 +16,30 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Firebase Setup (Before Blog Authoring)
+
+1. Copy `.env.example` values into `.env.local` and fill in your Firebase keys.
+2. In Firebase Console, enable **Storage** and create a bucket.
+3. Keep `NEXT_PUBLIC_MEDIA_REINFORCEMENT=false` while you are still transitioning.
+4. Start the app with `npm run dev`.
+5. In the blog editor, use **Upload To Firebase Storage** to upload cover images.
+
+### Suggested Firebase Storage Rules (temporary while private)
+
+```txt
+rules_version = '2';
+service firebase.storage {
+	match /b/{bucket}/o {
+		match /blog/covers/{allPaths=**} {
+			allow read;
+			allow write: if true;
+		}
+	}
+}
+```
+
+Use stricter auth-based rules before production.
+
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

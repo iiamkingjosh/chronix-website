@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { uploadBlogCoverImage, uploadBlogContentImage } from '@/lib/firebaseStorage';
+import { getCurrentUserIdToken } from '@/lib/firebaseAuth';
 
 const RichTextEditor = dynamic(
   () => import('@/components/page_components/blog/RichTextEditor'),
@@ -25,7 +27,10 @@ export default function PostEditorForm({
   const [title, setTitle] = useState(initialData?.title || '');
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || '');
   const [content, setContent] = useState(initialData?.content || '');
-  const [coverImage, setCoverImage] = useState(initialData?.coverImage || '');
+  const [coverImageUrl, setCoverImageUrl] = useState(initialData?.coverImageUrl || '');
+  const [coverImageAlt, setCoverImageAlt] = useState(initialData?.coverImageAlt || '');
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
@@ -45,7 +50,8 @@ export default function PostEditorForm({
     title: initialData?.title || '',
     excerpt: initialData?.excerpt || '',
     content: initialData?.content || '',
-    coverImage: initialData?.coverImage || '',
+    coverImageUrl: initialData?.coverImageUrl || '',
+    coverImageAlt: initialData?.coverImageAlt || '',
     slug: initialData?.slug || slug || '',
   }), [initialData, slug]);
 
@@ -53,7 +59,8 @@ export default function PostEditorForm({
     title !== initialSnapshot.title ||
     excerpt !== initialSnapshot.excerpt ||
     content !== initialSnapshot.content ||
-    coverImage !== initialSnapshot.coverImage
+    coverImageUrl !== initialSnapshot.coverImageUrl ||
+    coverImageAlt !== initialSnapshot.coverImageAlt
   );
 
   useEffect(() => {
@@ -77,15 +84,24 @@ export default function PostEditorForm({
     try {
       const endpoint = isEditMode ? `/api/blog/${encodeURIComponent(slug)}` : '/api/blog';
       const method = isEditMode ? 'PUT' : 'POST';
+      const token = await getCurrentUserIdToken();
+
+      if (!token) {
+        throw new Error('You must sign in to create or edit posts.');
+      }
 
       const response = await fetch(endpoint, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           title,
           excerpt,
           content,
-          coverImage,
+          coverImageUrl,
+          coverImageAlt,
           slug: resolvedSlug,
         }),
       });
@@ -113,6 +129,31 @@ export default function PostEditorForm({
     }
   };
 
+  const handleCoverUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingCover(true);
+    setUploadError('');
+
+    try {
+      const result = await uploadBlogCoverImage({ file, title });
+      setCoverImageUrl(result.url);
+
+      if (!coverImageAlt.trim()) {
+        setCoverImageAlt(title || 'Chronix Technology blog image');
+      }
+    } catch (error) {
+      console.error('Cover upload failed:', error);
+      setUploadError(error.message || 'Failed to upload image.');
+    } finally {
+      setUploadingCover(false);
+      event.target.value = '';
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -126,13 +167,39 @@ export default function PostEditorForm({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Cover Image URL</label>
+        <label className="block text-sm font-medium mb-2">Cover Image</label>
+        {coverImageUrl && (
+          <img
+            src={coverImageUrl}
+            alt={coverImageAlt || 'Cover preview'}
+            className="mb-3 h-40 w-full rounded-lg object-cover border"
+          />
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="cursor-pointer rounded border border-slate-300 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
+            {uploadingCover ? 'Uploading...' : coverImageUrl ? 'Replace Image' : 'Upload To Firebase Storage'}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              disabled={uploadingCover || submitting}
+              className="hidden"
+            />
+          </label>
+          <p className="text-xs text-gray-500">
+            Sign in first. The upload uses your Firebase admin session and auto-generates an SEO-friendly filename from the post title.
+          </p>
+        </div>
+        {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Cover Image Alt Text</label>
         <input
-          type="url"
-          value={coverImage}
-          onChange={(event) => setCoverImage(event.target.value)}
+          type="text"
+          value={coverImageAlt}
+          onChange={(event) => setCoverImageAlt(event.target.value)}
           className="w-full rounded border p-2"
-          placeholder="https://example.com/image.jpg"
+          placeholder="e.g. Network security illustration by Chronix Technology"
         />
       </div>
       <div>
@@ -146,7 +213,11 @@ export default function PostEditorForm({
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">Content</label>
-        <RichTextEditor value={content} onChange={setContent} />
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+          onImageUpload={(file) => uploadBlogContentImage({ file }).then((result) => result.url)}
+        />
         <p className="mt-2 text-xs text-gray-500">
           Use the toolbar to format text, add headings, create links with custom text, and insert resizable images by URL.
         </p>

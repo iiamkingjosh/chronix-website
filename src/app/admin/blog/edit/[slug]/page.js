@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import PostEditorForm from '@/components/page_components/blog/PostEditorForm';
-import { getPostData } from '@/lib/posts';
+import { getPostBySlug } from '@/lib/firestorePosts';
 
 export default async function EditBlogPostPage({ params }) {
   const { slug } = await params;
-  const postData = await getPostData(slug);
+  const postData = await getPostBySlug(slug);
 
   if (!postData) {
     return (
@@ -45,7 +45,8 @@ export default async function EditBlogPostPage({ params }) {
           title: postData.title || '',
           excerpt: postData.excerpt || '',
           content: postData.content || '',
-          coverImage: postData.coverImage || '',
+          coverImageUrl: postData.coverImageUrl || '',
+          coverImageAlt: postData.coverImageAlt || '',
         }}
       />
     </div>

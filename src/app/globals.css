@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @import "quill/dist/quill.snow.css";
 
+/* ── Company Logos Seamless Scroll ── */
+@keyframes seamless-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.logos-track {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: max-content;
+  animation: seamless-slide 25s linear infinite;
+  will-change: transform;
+}
+
+
+
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;

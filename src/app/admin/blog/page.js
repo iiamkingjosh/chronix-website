@@ -1,20 +1,68 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import {
+  getCurrentUserIdToken,
+  signInAdminWithGoogle,
+  signOutAdmin,
+  subscribeToAuthState,
+} from '@/lib/firebaseAuth';
 
-export default function AdminBlog() {
+function AdminBlogInner() {
   const [posts, setPosts] = useState([]);
+  const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('manage');
+  const searchParams = useSearchParams();
+
+  const handleSignIn = async () => {
+    try {
+      await signInAdminWithGoogle();
+      const next = searchParams.get('next');
+      if (next && next.startsWith('/')) {
+        window.location.href = next;
+      }
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+      alert(error.message || 'Failed to sign in.');
+    }
+  };
 
   useEffect(() => {
-    fetchPosts();
+    const unsubscribe = subscribeToAuthState(async (user) => {
+      setAuthUser(user);
+
+      if (!user) {
+        setPosts([]);
+        setLoading(false);
+        setAuthLoading(false);
+        return;
+      }
+
+      const token = await getCurrentUserIdToken();
+      await fetchPosts(token);
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (tokenOverride) => {
     try {
-      const response = await fetch('/api/blog');
+      const token = tokenOverride || await getCurrentUserIdToken();
+      if (!token) {
+        setPosts([]);
+        return;
+      }
+
+      const response = await fetch('/api/blog', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const postsData = await response.json();
         setPosts(postsData);
@@ -28,6 +76,15 @@ export default function AdminBlog() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOutAdmin();
+    } catch (error) {
+      console.error('Sign-out failed:', error);
+      alert(error.message || 'Failed to sign out.');
+    }
+  };
+
   const handleDelete = async (slug, title) => {
     if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
       return;
@@ -35,8 +92,17 @@ export default function AdminBlog() {
 
     try {
       const urlSlug = encodeURIComponent(slug);
+      const token = await getCurrentUserIdToken();
+      if (!token) {
+        alert('Please sign in again.');
+        return;
+      }
+
       const response = await fetch(`/api/blog/${urlSlug}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -70,6 +136,39 @@ export default function AdminBlog() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff761b] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h1 className="text-2xl font-bold text-[#003366]">Blog Admin Sign-In</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in with your authorized Google account to manage blog posts.
+          </p>
+          <button
+            onClick={handleSignIn}
+            className="mt-6 w-full rounded-md bg-[#ff761b] px-4 py-2 font-medium text-white transition hover:bg-[#e06713]"
+          >
+            Continue with Google
+          </button>
+          <p className="mt-3 text-xs text-gray-500">
+            Access is granted only to allowlisted admin emails when configured.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -94,12 +193,21 @@ export default function AdminBlog() {
               <div className="h-6 w-px bg-gray-300"></div>
               <h1 className="text-2xl font-bold text-[#003366]">Blog Admin</h1>
             </div>
-            <Link
-              href="/blog"
-              className="text-[#ff761b] hover:text-[#003366] font-medium"
-            >
-              View Public Blog →
-            </Link>
+            <div className="flex items-center gap-4">
+              <span className="hidden text-sm text-gray-600 md:inline">{authUser.email}</span>
+              <Link
+                href="/blog"
+                className="text-[#ff761b] hover:text-[#003366] font-medium"
+              >
+                View Public Blog →
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition hover:bg-gray-100"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -165,10 +273,10 @@ export default function AdminBlog() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-3">
-                          {post.coverImage && (
+                          {post.coverImageUrl && (
                             <img
-                              src={post.coverImage}
-                              alt={post.title}
+                              src={post.coverImageUrl}
+                              alt={post.coverImageAlt || post.title}
                               className="h-12 w-12 rounded-lg object-cover"
                             />
                           )}
@@ -258,5 +366,13 @@ export default function AdminBlog() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminBlog() {
+  return (
+    <Suspense>
+      <AdminBlogInner />
+    </Suspense>
   );
 }
